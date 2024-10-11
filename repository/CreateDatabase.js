@@ -13,7 +13,6 @@ const con = mysql.createConnection({
 
 con.connect(async function (err) {
   if (err) throw err;
-  console.log("Conectado !");
   con.query(
     `CREATE DATABASE IF NOT EXISTS delivery_impacta`,
     function (err, result) {

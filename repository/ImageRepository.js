@@ -3,14 +3,17 @@ class ImageRepository {
   constructor() {
     this.connection = Connection;
   }
-  async getAll() {
-    return await Connection.select("select * from imagem");
+  async getAll(tenant) {
+    return await Connection.select("select * from imagem WHERE TENANT_ID = ?", [
+      tenant,
+    ]);
   }
 
-  async insert(image_name) {
-    await Connection.insert("insert into imagem (nome) values (?)", [
-      image_name,
-    ]);
+  async insert(image_name, tenant) {
+    await Connection.insert(
+      "insert into imagem (nome,tenant_id) values (?,?)",
+      [image_name, tenant]
+    );
   }
 }
 

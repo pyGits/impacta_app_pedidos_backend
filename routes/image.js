@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const authenticateToken = require("../middleware/authenticateToken"); // Importa o middleware
 
 const uploadsPath = path.resolve(__dirname, "../uploads");
 const ImageController = require("./../controller/ImageController");
@@ -22,10 +23,18 @@ const upload = multer({ storage: storage });
 
 // Servir a pasta de uploads como estática
 router.use("/upload", express.static(uploadsPath));
-router.post("/image/upload", upload.single("image"), (req, res) => {
-  ImageController.insert(req, res);
-});
-router.get("/image", (req, res) => {
+
+// Rotas de imagem com autenticação
+router.post(
+  "/image/upload",
+  authenticateToken,
+  upload.single("image"),
+  (req, res) => {
+    ImageController.insert(req, res);
+  }
+);
+
+router.get("/image", authenticateToken, (req, res) => {
   ImageController.getAll(req, res);
 });
 
