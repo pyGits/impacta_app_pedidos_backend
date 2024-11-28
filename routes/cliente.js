@@ -15,6 +15,9 @@ router.delete("/:id", authenticateToken, (req, res) => {
 router.get("/:id", authenticateToken, (req, res) => {
   ClienteController.getById(req, res);
 });
+router.get("/:celular/:tenant/celular", (req, res) => {
+  ClienteController.getByCelular(req, res);
+});
 
 router.put("/:id", authenticateToken, (req, res) => {
   ClienteController.updateCliente(req, res);

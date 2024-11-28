@@ -20,7 +20,13 @@ class ClienteController {
     await ClienteRepository.update(req.body, req.TENANT_ID);
     res.status(200).json({ message: "Cliente atualizado com sucesso!" });
   }
-
+  async getByCelular(req, res) {
+    const response = await ClienteRepository.getByCelular(
+      req.params.celular,
+      req.params.tenant
+    );
+    res.status(200).json(response);
+  }
   async getById(req, res) {
     const response = await ClienteRepository.getById(
       req.params.id,

@@ -1,11 +1,12 @@
 const ProdutoRepository = require("../repository/ProdutoRepository");
-
+const PedidoRepository = require("../repository/PedidoRepository");
 class ProdutoController {
   async getAll(req, res) {
     const response = await ProdutoRepository.getAll(req.TENANT_ID);
     res.status(200).json(response);
   }
   async delete(req, res) {
+    await PedidoRepository.deleteFromProduct(req.params.id, req.TENANT_ID);
     await ProdutoRepository.delete(req.params.id, req.TENANT_ID);
     res.status(201).json({ message: "Produto deletado com sucesso !" });
   }

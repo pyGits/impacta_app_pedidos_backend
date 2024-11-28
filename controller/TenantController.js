@@ -3,20 +3,31 @@ const bcrypt = require("bcrypt"); // Certifique-se de importar o bcrypt
 const jwt = require("jsonwebtoken"); // Biblioteca para criar tokens JWT
 
 class TenantController {
+  async get(req, res) {
+    try {
+      const tenant = await TenantRepository.get(req.TENANT_ID);
+      if (!tenant) {
+        return res.status(404).json({ message: "Não encontrado" });
+      }
+      return res.status(200).json(tenant);
+    } catch (error) {
+      console.error("error", error);
+      return res.status(500).json({ message: "Erro ao obter ID" });
+    }
+  }
   async login(req, res) {
     try {
       // Obtem os dados do usuário a partir do corpo da requisição
       const { email, password } = req.body;
 
       // Busca o usuário no banco de dados
-      const user = await TenantRepository.get(email);
+      const user = await TenantRepository.getByEmail(email);
 
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado." });
       }
 
       // Verifica se a senha está correta
-      console.log(user);
       const isPasswordValid = await bcrypt.compare(password, user.senha);
 
       if (!isPasswordValid) {
@@ -29,9 +40,10 @@ class TenantController {
       });
 
       // Retorna o token para o cliente
-      return res.status(200).json({ token });
+      console.log({ token: token });
+      return res.status(200).json({ token: token });
     } catch (error) {
-      console.error(error);
+      console.error("error", error);
       return res.status(500).json({ message: "Erro ao realizar login." });
     }
   }
@@ -61,6 +73,48 @@ class TenantController {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Erro ao criar usuário." });
+    }
+  }
+  async newPassword(req, res) {
+    try {
+      const { email, senha, novaSenha } = req.body;
+
+      // Busca o usuário no banco de dados
+      const user = await TenantRepository.getByEmail(email);
+
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado." });
+      }
+
+      // Verifica se a senha está correta
+      const isPasswordValid = await bcrypt.compare(senha, user.senha);
+
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Senha incorreta." });
+      }
+
+      // Verifica se a nova senha é diferente da senha atual
+      if (novaSenha === senha) {
+        return res
+          .status(400)
+          .json({ message: "A nova senha não pode ser igual à senha atual." });
+      }
+
+      // Busca o usuário no banco de dados
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado." });
+      }
+
+      // Gera um hash da nova senha
+      const hashedPassword = await bcrypt.hash(novaSenha, 10);
+
+      // Atualiza a senha no banco de dados
+      await TenantRepository.updatePassword(email, hashedPassword);
+
+      return res.status(200).json({ message: "Senha atualizada com sucesso!" });
+    } catch (error) {
+      console.error("error", error);
+      return res.status(500).json({ message: "Erro ao atualizar a senha." });
     }
   }
 }

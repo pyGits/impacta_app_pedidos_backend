@@ -13,6 +13,12 @@ router.delete("/:id", authenticateToken, (req, res) => {
 router.get("/:id", authenticateToken, (req, res) => {
   PedidoController.getById(req, res);
 });
+router.put("/:id", authenticateToken, (req, res) => {
+  PedidoController.update(req, res);
+});
+router.get("/:tenant_id/celular/:celular", (req, res) => {
+  PedidoController.getByCelular(req, res);
+});
 
 router.post("/:tenant_id", (req, res) => {
   req.TENANT_ID = req.params.tenant_id;

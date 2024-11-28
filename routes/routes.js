@@ -7,7 +7,9 @@ const categorias_router = require("./categoria");
 const clientes_router = require("./cliente");
 const tenants_router = require("./tenant");
 const pedido_router = require("./pedido");
+const entregador_router = require("./entregador");
 
+router.use("/entregador", entregador_router);
 router.use("/tenant", tenants_router);
 router.use("/pedido", pedido_router);
 router.use("/produto", produtos_router);

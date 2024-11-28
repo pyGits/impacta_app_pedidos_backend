@@ -13,15 +13,9 @@ class PedidoRepository {
       [TENANT_ID]
     );
   }
-
   async getById(id, TENANT_ID) {
     const pedido = await Connection.selectOne(
-      `SELECT 
-        p.*,
-        c.nome as cliente_nome
-      FROM pedido p
-      LEFT JOIN cliente c ON c.id = p.cliente_id
-      WHERE p.id = ? AND p.tenant_id = ?`,
+      `select * from pedido where id = ? and tenant_id = ?`,
       [id, TENANT_ID]
     );
 
@@ -53,10 +47,11 @@ class PedidoRepository {
       mysqlDate,
       pedido.total,
       TENANT_ID,
+      pedido.status,
     ];
 
     const result = await Connection.insert(
-      "INSERT INTO pedido (cliente_id, data, total, tenant_id) VALUES (?, ?, ?, ?)",
+      "INSERT INTO pedido (cliente_id, data, total, tenant_id,STATUS) VALUES (?, ?, ?, ?,?)",
       pedidoParams
     );
 
@@ -81,15 +76,37 @@ class PedidoRepository {
     return pedidoId;
   }
 
+  async update(pedido, TENANT_ID) {
+    const params = [pedido.status, pedido.entregador_id, pedido.id, TENANT_ID];
+    return await Connection.update(
+      "UPDATE pedido set status = ?, entregador_id = ? where id = ? and tenant_id = ? ",
+      params
+    );
+  }
+
   async delete(id, TENANT_ID) {
     // Delete items first due to foreign key constraint
-    await Connection.delete("DELETE FROM pedido_item WHERE pedido_id = ?", [
-      id,
-    ]);
+    await Connection.delete(
+      "DELETE FROM pedido_item WHERE pedido_id = ? and tenant_id = ?",
+      [id, TENANT_ID]
+    );
 
     return await Connection.delete(
       "DELETE FROM pedido WHERE id = ? AND tenant_id = ?",
       [id, TENANT_ID]
+    );
+  }
+  async deleteFromProduct(produto_id, TENANT_ID) {
+    // Delete items first due to foreign key constraint
+    await Connection.delete("DELETE FROM pedido_item WHERE produto_id = ? ", [
+      produto_id,
+      TENANT_ID,
+    ]);
+  }
+  async getByCliente(tenant_id, id_cliente) {
+    return await Connection.select(
+      "select * from pedido left join entregador on pedido.entregador_id = entregador.id where cliente_id = ? and pedido.tenant_id = ?",
+      [id_cliente, tenant_id]
     );
   }
 }

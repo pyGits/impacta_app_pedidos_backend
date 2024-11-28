@@ -32,7 +32,7 @@ class ClienteRepository {
       tenant, // Adicionando o tenant aqui
     ];
 
-    await Connection.insert(
+    return await Connection.insert(
       `insert into cliente 
         (nome, cnpjcpf, rgie, telefone, celular, cep, logradouro, cidade, bairro, uf, complemento, numero, tenant_id) 
         values (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -82,7 +82,46 @@ class ClienteRepository {
       "select * from cliente where id = ? and tenant_id = ?",
       [id, tenant]
     );
+    console.log(id, tenant);
+    // Verificando se o cliente foi encontrado
+    if (!cliente) {
+      return {}; // ou lançar um erro, dependendo da lógica desejada
+    }
 
+    // Agrupando as informações de endereço em um objeto
+    cliente.endereco = {
+      cep: cliente.cep || "",
+      logradouro: cliente.logradouro,
+      cidade: cliente.cidade,
+      bairro: cliente.bairro,
+      uf: cliente.uf,
+      complemento: cliente.complemento,
+      numero: cliente.numero,
+    };
+
+    // Removendo os campos originais de endereço do objeto principal, se existirem
+    if (cliente.cep) delete cliente.cep;
+    if (cliente.logradouro) delete cliente.logradouro;
+    if (cliente.cidade) delete cliente.cidade;
+    if (cliente.bairro) delete cliente.bairro;
+    if (cliente.uf) delete cliente.uf;
+    if (cliente.complemento) delete cliente.complemento;
+    if (cliente.numero) delete cliente.numero;
+
+    return cliente;
+  }
+  async getByCelular(celular, tenant) {
+    let cliente = await Connection.selectOne(
+      "select * from cliente where celular = ? and tenant_id = ?",
+      [celular, tenant]
+    );
+    console.log(celular, tenant);
+
+    // Verificando se o cliente foi encontrado
+    if (!cliente) {
+      return null; // ou lançar um erro, dependendo da lógica desejada
+    }
+    console.log(cliente);
     // Agrupando as informações de endereço em um objeto
     cliente.endereco = {
       cep: cliente.cep,
@@ -94,14 +133,14 @@ class ClienteRepository {
       numero: cliente.numero,
     };
 
-    // Removendo os campos originais de endereço do objeto principal
-    delete cliente.cep;
-    delete cliente.logradouro;
-    delete cliente.cidade;
-    delete cliente.bairro;
-    delete cliente.uf;
-    delete cliente.complemento;
-    delete cliente.numero;
+    // Removendo os campos originais de endereço do objeto principal, se existirem
+    if (cliente.cep) delete cliente.cep;
+    if (cliente.logradouro) delete cliente.logradouro;
+    if (cliente.cidade) delete cliente.cidade;
+    if (cliente.bairro) delete cliente.bairro;
+    if (cliente.uf) delete cliente.uf;
+    if (cliente.complemento) delete cliente.complemento;
+    if (cliente.numero) delete cliente.numero;
 
     return cliente;
   }
